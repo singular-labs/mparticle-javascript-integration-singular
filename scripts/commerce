@@ -1,0 +1,29 @@
+var product1 = mParticle.eCommerce.createProduct(
+    'Double Room - Econ Rate',  
+    'econ-1',                   
+    100.00,                    
+    4                          
+);
+
+var product2 = mParticle.eCommerce.createProduct(
+    'Double Room - Econ Rate',
+    'econ-1', 
+    100.00, 
+    4
+);
+
+var transactionAttributes = {
+    Id: 'foo-transaction-id',
+    Revenue: 430.00,
+    Tax: 30
+};
+
+
+var customAttributes = {sale: true}; 
+var customFlags = {'Google.Category': 'travel'} 
+mParticle.eCommerce.logProductAction(
+    mParticle.ProductActionType.Purchase,
+    [product1, product2],
+    customAttributes,
+    customFlags,
+    transactionAttributes);
