@@ -84,11 +84,11 @@ describe('XYZ Forwarder', function () {
         }
     };
 // -------------------START EDITING BELOW:-----------------------
-    var MockXYZForwarder = function() {
+    var SingularSDKForwarder = function() {
         var self = this;
 
         // create properties for each type of event you want tracked, see below for examples
-        this.trackCustomEventCalled = false;
+        this.eventCalled = false;
         this.logPurchaseEventCalled = false;
         this.initializeCalled = false;
 
@@ -104,21 +104,21 @@ describe('XYZ Forwarder', function () {
         this.purchaseEventProperties = [];
 
         // stub your different methods to ensure they are being called properly
-        this.initialize = function(appId, apiKey) {
-            self.initializeCalled = true;
-            self.apiKey = apiKey;
-            self.appId = appId;
+        this.init = function(config) {
+            //self.initializeCalled = true;
+            //self.apiKey = apiKey;
+            //self.appId = appId;
         };
 
-        this.stubbedTrackingMethod = function(name, eventProperties){
-            self.trackCustomEventCalled = true;
-            self.trackCustomName = name;
-            self.eventProperties.push(eventProperties);
+        this.event = function(name, args){
+            self.eventCalled = true;
+            self.eventName = name;
+            self.eventArgs = args;
             // Return true to indicate event should be reported
             return true;
         };
 
-        this.stubbedUserAttributeSettingMethod = function(userAttributes) {
+       /* this.stubbedUserAttributeSettingMethod = function(userAttributes) {
             self.userId = id;
             userAttributes = userAttributes || {};
             if (Object.keys(userAttributes).length) {
@@ -135,7 +135,7 @@ describe('XYZ Forwarder', function () {
 
         this.stubbedUserLoginMethod = function(id) {
             self.userId = id;
-        };
+        };*/
     };
 
     before(function () {
@@ -143,7 +143,7 @@ describe('XYZ Forwarder', function () {
     });
 
     beforeEach(function() {
-        window.MockXYZForwarder = new MockXYZForwarder();
+        singularSdk = new SingularSDKForwarder();
         // Include any specific settings that is required for initializing your SDK here
         var sdkSettings = {
             clientKey: '123456',
@@ -168,23 +168,25 @@ describe('XYZ Forwarder', function () {
     });
 
     it('should log event', function(done) {
-        // mParticle.forwarder.process({
-        //     EventDataType: MessageType.PageEvent,
-        //     EventName: 'Test Event',
-        //     EventAttributes: {
-        //         label: 'label',
-        //         value: 200,
-        //         category: 'category'
-        //     }
-        // });
+         mParticle.forwarder.process({
+             EventDataType: MessageType.PageEvent,
+             EventName: 'Test Event',
+             EventAttributes: {
+                 label: 'label',
+                 value: 200,
+                 category: 'category'
+             }
+         });
         
-        // window.MockXYZForwarder.eventProperties[0].label.should.equal('label');
+         singularSdk.eventName.should.equal('Test Event');
+         singularSdk.eventArgs.label.should.equal('label');
+
         // window.MockXYZForwarder.eventProperties[0].value.should.equal(200);
 
         done();
     });
 
-    it('should log page view', function(done) {
+   // it('should log page view', function(done) {
         // mParticle.forwarder.process({
         //     EventDataType: MessageType.PageView,
         //     EventName: 'test name',
@@ -199,10 +201,10 @@ describe('XYZ Forwarder', function () {
         // window.MockXYZForwarder.eventProperties[0].attr1.should.equal('test1');
         // window.MockXYZForwarder.eventProperties[0].attr2.should.equal('test2');
 
-        done();
-    });
+    //    done();
+    //});
 
-    it('should log a product purchase commerce event', function(done) {
+    //it('should log a product purchase commerce event', function(done) {
         // mParticle.forwarder.process({
         //     EventName: 'Test Purchase Event',
         //     EventDataType: MessageType.Commerce,
@@ -244,10 +246,10 @@ describe('XYZ Forwarder', function () {
         // window.MockXYZForwarder.eventProperties[0].CouponCode.should.equal('coupon-code');
         // window.MockXYZForwarder.eventProperties[0].Quantity.should.equal(1);
 
-        done();
-    });
+    //    done();
+   // });
 
-    it('should set customer id user identity on user identity change', function(done) {
+   // it('should set customer id user identity on user identity change', function(done) {
         // var fakeUserStub = {
         //     getUserIdentities: function() {
         //         return {
@@ -271,6 +273,6 @@ describe('XYZ Forwarder', function () {
         //
         // window.MockXYZForwarder.userId.should.equal('123');
 
-        done();
-    });
+      //  done();
+    //});
 });
