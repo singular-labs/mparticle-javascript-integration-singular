@@ -63,14 +63,29 @@ function CommerceHandler(common) {
 
 CommerceHandler.prototype.logCommerceEvent = function(event) {
     let eventName = event.EventName;
-    let attributes = event.ProductAction && event.ProductAction.ProductList ? {...event.EventAttributes, productList: event.ProductAction.ProductList} : event.EventAttributes;
-    if (event.EventCategory == 16 && event.ProductAction) {
-        let currency = event.CurrencyCode ? event.CurrencyCode : "USD";
-        let amount = event.ProductAction.TotalAmount;
-        singularSdk.revenue(eventName, currency, amount, attributes);
-    } else {
-        singularSdk.event(eventName, attributes);
+    if(event.ProductAction && event.ProductAction.ProductList && event.ProductAction.ProductList.length != 0){
+        for (let i = 0 ; i < event.ProductAction.ProductList.length ; i++){
+            if (event.EventCategory == 16 && event.ProductAction){
+                let currency = event.CurrencyCode ? event.CurrencyCode : "USD";
+                let amount = event.ProductAction.ProductList[i].TotalAmount;
+                singularSdk.revenue(eventName, currency, amount, {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+            }else{
+                singularSdk.event(eventName,  {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+            }
+        }
+    }else{
+        if (event.EventCategory == 16 && event.ProductAction) {
+            let currency = event.CurrencyCode ? event.CurrencyCode : "USD";
+            let amount = event.ProductAction?event.ProductAction.TotalAmount:0;
+            singularSdk.revenue(eventName, currency, amount, event.EventAttributes);
+        } else {
+            singularSdk.event(eventName,  event.EventAttributes);
+        }
     }
+
+
+
+
     
 };
 

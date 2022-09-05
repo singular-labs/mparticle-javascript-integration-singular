@@ -19,7 +19,7 @@ var initialization = {
                      eventQueue = [];
                  }
 
-                 var config = new SingularConfig(forwarderSettings.apiKey, forwarderSettings.secret, forwarderSettings.bundleId).withPersistentSingularDeviceId(mParticle.getDeviceId())
+                 var config = new SingularConfig(forwarderSettings.apiKey, forwarderSettings.secret, forwarderSettings.productId).withPersistentSingularDeviceId(mParticle.getDeviceId())
                  singularSdk.init(config)
              };
         }
