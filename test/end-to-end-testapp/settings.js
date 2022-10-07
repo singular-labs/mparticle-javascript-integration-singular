@@ -1,5 +1,5 @@
 var SDKsettings = {
-    apiKey: 'API_Key',
+    apiKey: 'API_KEY',
     secret:'SECRET',
     productId:'Product'
 };
