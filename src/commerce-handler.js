@@ -68,9 +68,23 @@ CommerceHandler.prototype.logCommerceEvent = function(event) {
             if (event.EventCategory == 16 && event.ProductAction){
                 let currency = event.CurrencyCode ? event.CurrencyCode : "USD";
                 let amount = event.ProductAction.ProductList[i].TotalAmount;
-                singularSdk.revenue(eventName, currency, amount, {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+                let newAttributes = {} 
+                for (var att in event.EventAttributes) {
+                    newAttributes[att] = event.EventAttributes[att]
+                } 
+                for (var att in event.ProductAction.ProductList[i].Attributes){
+                    newAttributes[att] = event.ProductAction.ProductList[i].Attributes[att]
+                }
+                singularSdk.revenue(eventName, currency, amount, newAttributes);
             }else{
-                singularSdk.event(eventName,  {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+                let newAttributes = {} 
+                for (var att in event.EventAttributes) {
+                    newAttributes[att] = event.EventAttributes[att]
+                } 
+                for (var att in event.ProductAction.ProductList[i].Attributes){
+                    newAttributes[att] = event.ProductAction.ProductList[i].Attributes[att]
+                }
+                singularSdk.event(eventName, newAttributes);
             }
         }
     }else{

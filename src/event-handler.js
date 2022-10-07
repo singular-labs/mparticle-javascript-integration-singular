@@ -17,9 +17,16 @@ function EventHandler(common) {
     this.common = common || {};
 }
 EventHandler.prototype.logEvent = function(event) {
-
-    let attributes = event.ProductAction && event.ProductAction.ProductList ? {...event.EventAttributes, productList: event.ProductAction.ProductList} : event.EventAttributes;
-    singularSdk.event(event.EventName, attributes)
+    let newAttributes = {} 
+    if (event.ProductAction && event.ProductAction.ProductList) {
+        for (var att in event.EventAttributes) {
+            newAttributes[att] = event.EventAttributes[att]
+        } 
+        newAttributes[productList] = event.ProductAction.ProductList
+    } else {
+        newAttributes = event.EventAttributes
+    }
+    singularSdk.event(event.EventName, newAttributes)
 
 };
 EventHandler.prototype.logError = function(event) {
