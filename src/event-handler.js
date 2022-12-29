@@ -16,12 +16,24 @@ A non-ecommerce event has the following schema:
 function EventHandler(common) {
     this.common = common || {};
 }
+
 EventHandler.prototype.logEvent = function(event) {
-
-    let attributes = event.ProductAction && event.ProductAction.ProductList ? {...event.EventAttributes, productList: event.ProductAction.ProductList} : event.EventAttributes;
-    singularSdk.event(event.EventName, attributes)
-
+    if (!this.common.forwardWebRequestsServerSide) {
+        let newAttributes = {} 
+        if (event.ProductAction && event.ProductAction.ProductList) {
+            for (var att in event.EventAttributes) {
+                newAttributes[att] = event.EventAttributes[att]
+            } 
+            newAttributes[productList] = event.ProductAction.ProductList
+        } else {
+            newAttributes = event.EventAttributes
+        }
+        singularSdk.event(event.EventName, newAttributes)
+        return true
+    }
+    return false 
 };
+
 EventHandler.prototype.logError = function(event) {
 
 };
