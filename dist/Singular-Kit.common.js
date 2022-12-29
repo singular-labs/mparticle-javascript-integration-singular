@@ -78,9 +78,23 @@ CommerceHandler.prototype.logCommerceEvent = function(event) {
             if (event.EventCategory == 16 && event.ProductAction){
                 let currency = event.CurrencyCode ? event.CurrencyCode : "USD";
                 let amount = event.ProductAction.ProductList[i].TotalAmount;
-                singularSdk.revenue(eventName, currency, amount, {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+                let newAttributes = {}; 
+                for (var att in event.EventAttributes) {
+                    newAttributes[att] = event.EventAttributes[att];
+                } 
+                for (var att in event.ProductAction.ProductList[i].Attributes){
+                    newAttributes[att] = event.ProductAction.ProductList[i].Attributes[att];
+                }
+                singularSdk.revenue(eventName, currency, amount, newAttributes);
             }else{
-                singularSdk.event(eventName,  {...event.EventAttributes, ...event.ProductAction.ProductList[i].Attributes });
+                let newAttributes = {}; 
+                for (var att in event.EventAttributes) {
+                    newAttributes[att] = event.EventAttributes[att];
+                } 
+                for (var att in event.ProductAction.ProductList[i].Attributes){
+                    newAttributes[att] = event.ProductAction.ProductList[i].Attributes[att];
+                }
+                singularSdk.event(eventName, newAttributes);
             }
         }
     }else{
@@ -119,12 +133,24 @@ A non-ecommerce event has the following schema:
 function EventHandler(common) {
     this.common = common || {};
 }
+
 EventHandler.prototype.logEvent = function(event) {
-
-    let attributes = event.ProductAction && event.ProductAction.ProductList ? {...event.EventAttributes, productList: event.ProductAction.ProductList} : event.EventAttributes;
-    singularSdk.event(event.EventName, attributes);
-
+    if (!this.common.forwardWebRequestsServerSide) {
+        let newAttributes = {}; 
+        if (event.ProductAction && event.ProductAction.ProductList) {
+            for (var att in event.EventAttributes) {
+                newAttributes[att] = event.EventAttributes[att];
+            } 
+            newAttributes[productList] = event.ProductAction.ProductList;
+        } else {
+            newAttributes = event.EventAttributes;
+        }
+        singularSdk.event(event.EventName, newAttributes);
+        return true
+    }
+    return false 
 };
+
 EventHandler.prototype.logError = function(event) {
 
 };
@@ -199,25 +225,27 @@ var initialization = {
 
     initForwarder: function(forwarderSettings, testMode, userAttributes, userIdentities, processEvent, eventQueue, isInitialized, common, appVersion, appName, customFlags, clientId) {
         if (!testMode) {
-             var clientScript = document.createElement('script');
-             clientScript.type = 'text/javascript';
-             clientScript.async = true;
-             clientScript.src = 'https://web-sdk-cdn.singular.net/singular-sdk/latest/singular-sdk.js';   
-             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(clientScript);
-             clientScript.onload = function() {
-                 if (singularSdk && eventQueue.length > 0) {
-                     // Process any events that may have been queued up while forwarder was being initialized.
-                     for (var i = 0; i < eventQueue.length; i++) {
-                         processEvent(eventQueue[i]);
-                     }
-                      // now that each queued event is processed, we empty the eventQueue
-                     eventQueue = [];
-                 }
+            common.forwardWebRequestsServerSide = forwarderSettings.forwardWebRequestsServerSide === 'True';
+            if (!forwarderSettings.forwardWebRequestsServerSide) {
+                var clientScript = document.createElement('script');
+                clientScript.type = 'text/javascript';
+                clientScript.async = true;
+                clientScript.src = 'https://web-sdk-cdn.singular.net/singular-sdk/latest/singular-sdk.js';   
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(clientScript);
+                clientScript.onload = function() {
+                    if (singularSdk && eventQueue.length > 0) {
+                        // Process any events that may have been queued up while forwarder was being initialized.
+                        for (var i = 0; i < eventQueue.length; i++) {
+                            processEvent(eventQueue[i]);
+                        }
+                        // now that each queued event is processed, we empty the eventQueue
+                        eventQueue = [];
+                    }
 
-                 var config = new SingularConfig(forwarderSettings.apiKey, forwarderSettings.secret, forwarderSettings.productId).withPersistentSingularDeviceId(mParticle.getDeviceId());
-                 singularSdk.init(config);
-             };
-        }
+                    var config = new SingularConfig(forwarderSettings.apiKey, forwarderSettings.secret, forwarderSettings.productId).withPersistentSingularDeviceId(mParticle.getDeviceId());
+                    singularSdk.init(config);
+                };
+            }        }
     }
 };
 
